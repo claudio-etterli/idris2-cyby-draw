@@ -465,7 +465,7 @@ selectionCorners (G o g) =
 
 ||| Checks, if there is enough space to grab the box in the canvas.
 export
-selectZones : {auto s : CoreDims} -> (p1,p2 : Point Id) -> SelectZones
+selectZones : (s : CoreDims) => (p1,p2 : Point Id) -> SelectZones
 selectZones p1 p2 =
   let b  := s.selectBufferSize
       bs := bounds p1 <+> bounds p2
@@ -537,7 +537,7 @@ bestPos g b n p =
 
 ||| Equally spaced sequence of `s.angleSteps` angles from 0 until 2pi.
 export
-stepAngles : {auto s : CoreDims} -> List Angle
+stepAngles : (s : CoreDims) => List Angle
 stepAngles =
   let step = angle (TwoPi / cast s.angleSteps)
    in map (\x => cast x * step) [0.. pred s.angleSteps]
@@ -546,11 +546,7 @@ stepAngles =
 ||| The boolean flag indicates if "Shift" is currently down, in which case
 ||| we just return the current point.
 export
-suggestedPos :
-     {auto _ : CoreDims}
-  -> Bool
-  -> (atom, current : Point Id)
-  -> Point Id
+suggestedPos : CoreDims => Bool -> (atom, current : Point Id) -> Point Id
 suggestedPos True pa pc = pc
 suggestedPos False pa pc =
   let Just mouseAngle := angle (pc - pa) | Nothing => pc
@@ -614,7 +610,7 @@ incNode k x = tryNatToFin (k + finToNat x)
 ||| After moving or rotating the selected nodes in a graph,
 ||| check for pairs of close nodes and merge them.
 export
-mergeCloseNodes : {auto _ : CoreDims} -> {k:_} -> CDIGraph k -> CDGraph
+mergeCloseNodes : CoreDims => {k:_} -> CDIGraph k -> CDGraph
 mergeCloseNodes g =
   let ns        := filter (not . inAbbreviation g) (selectedNodes g True)
       lMergeN   := mapMaybe closestPair ns
@@ -656,13 +652,7 @@ mergeGraphs' g t bs =
 -- zero node via a single bond with the given node of the current molecule.
 -- The template is rotated and translated in such a way that we get
 -- preferrable bond angles both at the current graph and the template.
-mergeGraphsOnAtom :
-     {auto _ : CoreDims}
-  -> {k,m : _}
-  -> Fin k
-  -> CDIGraph k
-  -> CDIGraph m
-  -> CDGraph
+mergeGraphsOnAtom : CoreDims => {k,m : _} -> Fin k -> CDIGraph k -> CDIGraph m -> CDGraph
 mergeGraphsOnAtom {m = 0}   _ g _ = G _ g
 mergeGraphsOnAtom {m = S _} n g t =
   case bondAngles g n of
@@ -715,11 +705,7 @@ mergeGraphsOnBond p (E n1 n2 _) g t =
 ||| Add the template to the existing graph depending on clicking on an atom,
 ||| a bond or elsewhere on the canvas.
 export
-mergeGraphs :
-     {auto _ : CoreDims}
-  -> Point Id
-  -> (g, t : CDGraph)
-  -> CDGraph
+mergeGraphs : CoreDims => Point Id -> (g, t : CDGraph) -> CDGraph
 mergeGraphs c (G o1 g) (G o2 t) =
   case hoveredItem g of
     N k  => mergeGraphsOnAtom (fst k) g t
@@ -927,12 +913,7 @@ translateTemplate p t =
 ||| Merges a template graph with the current mol graph based on the
 ||| current mouse position.
 export
-addTemplate :
-     {auto _ : CoreDims}
-  -> {s : _}
-  -> Point s
-  -> (t, mol : CDGraph)
-  -> CDGraph
+addTemplate : CoreDims => {s : _} -> Point s -> (t, mol : CDGraph) -> CDGraph
 addTemplate p t mol =
   let v := convert p - center t
    in mergeGraphs (convert p) mol (bimap new (translateTemplateAtom v) t)
