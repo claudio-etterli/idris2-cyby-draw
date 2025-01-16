@@ -33,8 +33,8 @@ data Mode : Type where
   SetAbbr     : Abbreviation -> Mode
   SetTempl    : CDGraph -> Mode
   RotTempl    : (start : Point Mol) -> CDGraph -> Mode
-  RotTemplAtm : (clickedAtom : Nat) -> CDGraph -> Mode
-  RotTemplOvp : (overlaps : (Nat,Nat)) -> CDGraph -> Mode
+  RotTemplAtm : (g,t : CDGraph) -> Fin g.order -> Mode
+  RotTemplOvp : (g,t : CDGraph) -> (Fin g.order, Fin t.order) -> Mode
   Selecting   : (start : Point Id) -> Mode
   Erasing     : (start : Point Id) -> Mode
   Dragging    : (start : Point Mol) -> Mode
@@ -232,8 +232,8 @@ nextMol s =
       Rotating p       => rotateSelected (s.modifier == Shift) p s.posMol s.mol
       SetTempl t       => addTemplate s.posMol t s.mol
       RotTempl p t     => addTemplate p (rotateTempl False p s.posMol t) s.mol
-      RotTemplOvp ps t => addTemplateRot s.posMol (Right ps) t.graph s.imol
-      RotTemplAtm p t  => addTemplateRot s.posMol (Left p) t.graph s.imol
+      RotTemplOvp g t ps => addTemplateRot s.posMol (Right ?foops) t.graph s.imol
+      RotTemplAtm m t p  => addTemplateRot s.posMol (Left ?foop) t.graph s.imol
       Drawing Nothing  => addBond (s.modifier == Shift) s.posMol s.bond s.imol
       Drawing (Just $ A l _ g) => setAbbreviation (s.modifier == Shift) l s.posId g s.mol
 
@@ -416,13 +416,13 @@ parameters {auto ds : DrawSettings}
             SetTempl  t =>
                 case hoveredItem s.imol of
                   -- adding template at hovered atom
-                  N (f,_)  => {mode := RotTemplAtm (finToNat f) t} s
+                  N (f,_)  => {mode := RotTemplAtm s.mol t f} s
                   _        =>
                    let t' := graph $ translateTemplate s.posMol t
                     in case nodesToMerge s.imol t' of
                          -- exactly one overlap -> rotating around it possible
                          [(fm, ft)] =>
-                           {mode := RotTemplOvp (finToNat fm, finToNat ft) t} s
+                           {mode := RotTemplOvp s.mol (G _ t') (fm, ft)} s
                          _          =>
                            setMol (cleanup $ nextMol s) $ {mode := SetTempl t} s
             _ => s
@@ -440,8 +440,8 @@ parameters {auto ds : DrawSettings}
       Erasing   _ => delete $ {mode := Erase, mol := cleanup (nextMol s)} s
       Dragging  _ => setMol (cleanup $ nextMol s) $ {mode := Select} s
       Rotating  _ => setMol (cleanup $ nextMol s) $ {mode := Select} s
-      RotTemplAtm _ t  => setMol (cleanup $ nextMol s) $ {mode := SetTempl t} s
-      RotTemplOvp _ t  => setMol (cleanup $ nextMol s) $ {mode := SetTempl t} s
+      RotTemplAtm _ t _ => setMol (cleanup $ nextMol s) $ {mode := SetTempl t} s
+      RotTemplOvp _ t _ => setMol (cleanup $ nextMol s) $ {mode := SetTempl t} s
       Drawing (Just a) => setMol (cleanup $ nextMol s) $ {mode := SetAbbr a} s
       Drawing Nothing  => setMol (cleanup $ nextMol s) $ {mode := Draw} s
       PTable (Just el) => {mode := SetAtom (cast el)} s
