@@ -604,15 +604,33 @@ newEdges t ps = do
   (a1,a2) <- ps
   (\(x,l) => (a1,x,l)) <$> neighboursAsPairs t a2
 
--- TODO
--- checks if the bond is later deleted due to the close node merging and if this
--- is the case, create a new bond to the non-template node which replaces the
--- template atom
-stabelBond :
+createStableBond :
      {k,m : _}
-  -> (Fin k, Fin m)
-  -> List (Fin k, Fin m, CDBond)
-  -> (Fin k, Fin k, CDBond)
+  -> List (Fin k, Fin m)
+  -> Edge m CDBond
+  -> Maybe $ Edge k CDBond
+createStableBond nsToMerge bnd =
+  let filter := foldMap {m=List (Fin k, Fin m)}
+                  (\(nm,nt) => if nt == bnd.node1 || nt == bnd.node2
+                                 then [(nm, nt)]
+                                 else [])
+                  nsToMerge
+   in case filter of
+        [(nm',_),(nm'',_)] => mkEdge nm' nm'' bnd.label
+        _                  => Nothing
+
+-- filters out bonds of the template, where both nodes are merged and therefore
+-- the bond would be deleted
+-- transfers this bonds to the nodes of the origin molecule, therefore the bonds
+-- are not deleted and are 'stable'
+stableBonds :
+     {k,m : _}
+  -> CDIGraph m
+  -> (nsToMerge : List (Fin k, Fin m))
+  -> List $ Edge k CDBond
+stableBonds t nsToMerge =
+  let tempEdges := edges t
+   in mapMaybe (createStableBond nsToMerge) tempEdges
 
 incNode : {m : _} -> (k : Nat) -> Fin m -> Maybe (Fin $ k + m)
 incNode k x = tryNatToFin (k + finToNat x)
@@ -655,8 +673,12 @@ mergeGraphs' g t bs =
   let lMergeN     := nodesToMerge g t
       offset      := offset g t lMergeN
       lnewBonds   := newEdges t lMergeN ++ bs
-      mol'        := mergeGraphsWithEdges g (translate offset t) lnewBonds
-   in delNodes (mapMaybe (incNode k . snd) lMergeN) mol'
+      -- creates and inserts bonds between atoms of the origin molecule, which
+      -- origins from (later) merged template atoms, where the bond would be
+      -- lost otherwise
+      mol'        := insEdges (stableBonds t lMergeN) g
+      mol''       := mergeGraphsWithEdges mol' (translate offset t) lnewBonds
+   in delNodes (mapMaybe (incNode k . snd) lMergeN) mol''
 
 -- This connects a template to a graph by connecting the template's
 -- zero node via a single bond with the given node of the current molecule.
