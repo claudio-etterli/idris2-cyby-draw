@@ -956,23 +956,17 @@ addTemplateRot :
      {auto _ : CoreDims}
   -> {s,k,n : _}
   -> (cursor : Point s)
-  -> Either Nat (Nat, Nat)
+  -> Either (Fin n) (Fin n, Fin k)
   -> (templ : CDIGraph k)
   -> (mol : CDIGraph n)
   -> CDGraph
-addTemplateRot {n = S j,k = S i} p (Left x) t m =
-  case natToFin x (S j) of
-    Nothing => addTemplate p (G _ t) (G _ m)
-    Just f  =>
-      let rotTemp := rotTemplOnAtom p f m t
-          bnd     := CB New $ cast Single
-       in mergeGraphs' m rotTemp [(f,0,bnd)]
-addTemplateRot {n = S j,k = S i} p (Right (nm,nt)) t m =
-  case (natToFin nm (S j), natToFin nt (S i)) of
-    (Just fm, Just ft) =>
-      let (G _ rotTemp) := rotTemplAroundOverlap p fm ft m t
-       in mergeGraphs' m rotTemp []
-    _                  => addTemplate p (G _ t) (G _ m)
+addTemplateRot {n = S j,k = S i} p (Left f) t m =
+  let rotTemp := rotTemplOnAtom p f m t
+      bnd     := CB New $ cast Single
+   in mergeGraphs' m rotTemp [(f,0,bnd)]
+addTemplateRot {n = S j,k = S i} p (Right (fm,ft)) t m =
+  let (G _ rotTemp) := rotTemplAroundOverlap p fm ft m t
+   in mergeGraphs' m rotTemp []
 addTemplateRot _ _ _ m = G _ m
 
 ||| Remove the abbreviation labels from orphaned abbreviation atoms.
