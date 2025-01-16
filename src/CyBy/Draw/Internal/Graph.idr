@@ -630,12 +630,21 @@ mergeCloseNodes g =
     closestPair : Fin k -> Maybe (Fin k, Fin k)
     closestPair x = (x,) <$> closestNodeWhere canSelfMerge (pointAt g x) g
 
+||| Merges two graphs and merges atoms, which are overlapping.
+||| If bonds should be added between the two graphs, the last argument
+||| allows a list of the according nodes and its bond type.
 export
-mergeGraphs' : CoreDims => {k,m:_} -> CDIGraph k -> CDIGraph m -> CDGraph
-mergeGraphs' g t =
+mergeGraphs' :
+     CoreDims
+  => {k,m:_}
+  -> CDIGraph k
+  -> CDIGraph m
+  -> List (Fin k, Fin m, CDBond)
+  -> CDGraph
+mergeGraphs' g t bs =
   let lMergeN     := nodesToMerge g t
       offset      := offset g t lMergeN
-      lnewBonds   := newEdges t lMergeN
+      lnewBonds   := newEdges t lMergeN ++ bs
       mol'        := mergeGraphsWithEdges g (translate offset t) lnewBonds
    in delNodes (mapMaybe (incNode k . snd) lMergeN) mol'
 
@@ -651,7 +660,7 @@ mergeGraphsOnAtom {m = S _} n g t =
       let a0     := preferredAngle False (bondAngles t 0)
           tr     := rotate (an - a0) t
           offset := point (lab g n) - point (lab tr 0)
-       in mergeGraphs' g (translate offset tr)
+       in mergeGraphs' g (translate offset tr) []
     as   =>
       let an     := preferredAngle False as
           a0     := preferredAngle False (bondAngles t 0)
@@ -659,7 +668,7 @@ mergeGraphsOnAtom {m = S _} n g t =
           offset := point (lab g n) - point (lab tr 0)
           v      := polar BondLengthInAngstrom an + offset
           bond   := CB New $ cast Single
-       in G _ $ mergeGraphsWithEdges g (translate v tr) [(n,0,bond)]
+       in mergeGraphs' g (translate v tr) [(n,0,bond)]
 
 -- This connects a template to a graph by replacing the template's
 -- smallest edge given edge of the current molecule.
@@ -690,8 +699,8 @@ mergeGraphsOnBond p (E n1 n2 _) g t =
           tr2     := rotate (ag - at + pi) t
           tt2     := translate (point (lab g n1) - point (lab tr2 n4)) tr2
        in if distance p (center tt1) <= distance p (center tt2)
-             then mergeGraphs' g tt1
-             else mergeGraphs' g tt2
+             then mergeGraphs' g tt1 []
+             else mergeGraphs' g tt2 []
 
 ||| Add the template to the existing graph depending on clicking on an atom,
 ||| a bond or elsewhere on the canvas.
@@ -701,7 +710,7 @@ mergeGraphs c (G o1 g) (G o2 t) =
   case hoveredItem g of
     N k  => mergeGraphsOnAtom (fst k) g t
     E e  => mergeGraphsOnBond (convert c) e g t
-    None => mergeGraphs' g t
+    None => mergeGraphs' g t []
 
 -- Rotating of template around connecting atom (no merging!).
 -- First the template is placed in such a way that preferrable bond angles are
