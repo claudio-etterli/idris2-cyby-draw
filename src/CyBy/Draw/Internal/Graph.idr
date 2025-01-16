@@ -465,7 +465,7 @@ selectionCorners (G o g) =
 
 ||| Checks, if there is enough space to grab the box in the canvas.
 export
-selectZones : (s : CoreDims) => (p1,p2 : Point Id) -> SelectZones
+selectZones : {auto s : CoreDims} -> (p1,p2 : Point Id) -> SelectZones
 selectZones p1 p2 =
   let b  := s.selectBufferSize
       bs := bounds p1 <+> bounds p2
@@ -537,7 +537,7 @@ bestPos g b n p =
 
 ||| Equally spaced sequence of `s.angleSteps` angles from 0 until 2pi.
 export
-stepAngles : (s : CoreDims) => List Angle
+stepAngles : {auto s : CoreDims} -> List Angle
 stepAngles =
   let step = angle (TwoPi / cast s.angleSteps)
    in map (\x => cast x * step) [0.. pred s.angleSteps]
@@ -546,7 +546,11 @@ stepAngles =
 ||| The boolean flag indicates if "Shift" is currently down, in which case
 ||| we just return the current point.
 export
-suggestedPos : CoreDims => Bool -> (atom, current : Point Id) -> Point Id
+suggestedPos :
+     {auto _ : CoreDims}
+  -> Bool
+  -> (atom, current : Point Id)
+  -> Point Id
 suggestedPos True pa pc = pc
 suggestedPos False pa pc =
   let Just mouseAngle := angle (pc - pa) | Nothing => pc
@@ -610,7 +614,7 @@ incNode k x = tryNatToFin (k + finToNat x)
 ||| After moving or rotating the selected nodes in a graph,
 ||| check for pairs of close nodes and merge them.
 export
-mergeCloseNodes : CoreDims => {k:_} -> CDIGraph k -> CDGraph
+mergeCloseNodes : {auto _ : CoreDims} -> {k:_} -> CDIGraph k -> CDGraph
 mergeCloseNodes g =
   let ns        := filter (not . inAbbreviation g) (selectedNodes g True)
       lMergeN   := mapMaybe closestPair ns
@@ -635,8 +639,8 @@ mergeCloseNodes g =
 ||| allows a list of the according nodes and its bond type.
 export
 mergeGraphs' :
-     CoreDims
-  => {k,m:_}
+     {auto _ : CoreDims}
+  -> {k,m:_}
   -> CDIGraph k
   -> CDIGraph m
   -> List (Fin k, Fin m, CDBond)
@@ -652,7 +656,13 @@ mergeGraphs' g t bs =
 -- zero node via a single bond with the given node of the current molecule.
 -- The template is rotated and translated in such a way that we get
 -- preferrable bond angles both at the current graph and the template.
-mergeGraphsOnAtom : CoreDims => {k,m : _} -> Fin k -> CDIGraph k -> CDIGraph m -> CDGraph
+mergeGraphsOnAtom :
+     {auto _ : CoreDims}
+  -> {k,m : _}
+  -> Fin k
+  -> CDIGraph k
+  -> CDIGraph m
+  -> CDGraph
 mergeGraphsOnAtom {m = 0}   _ g _ = G _ g
 mergeGraphsOnAtom {m = S _} n g t =
   case bondAngles g n of
@@ -705,21 +715,26 @@ mergeGraphsOnBond p (E n1 n2 _) g t =
 ||| Add the template to the existing graph depending on clicking on an atom,
 ||| a bond or elsewhere on the canvas.
 export
-mergeGraphs : CoreDims => Point Id -> (g, t : CDGraph) -> CDGraph
+mergeGraphs :
+     {auto _ : CoreDims}
+  -> Point Id
+  -> (g, t : CDGraph)
+  -> CDGraph
 mergeGraphs c (G o1 g) (G o2 t) =
   case hoveredItem g of
     N k  => mergeGraphsOnAtom (fst k) g t
     E e  => mergeGraphsOnBond (convert c) e g t
     None => mergeGraphs' g t []
 
--- Rotating of template around connecting atom (no merging!).
+-- Rotating of the template around the clicked atom. The template will
+-- be connected to this atom by a new bond.
 -- First the template is placed in such a way that preferrable bond angles are
 -- created. Then, if the mouse cursor is moving away (min 1/4 of a std-bond
--- length), the template and its connecting bond rotates around the access
--- atom of the original molecule.
+-- length) from the clicked atom, the template and its connecting bond rotat
+-- around the clicked atom of the original molecule.
 rotTemplOnAtom :
-     CoreDims
-  => {s,k,m : _}
+     {auto _ : CoreDims}
+  -> {s,k,m : _}
   -> (cursor : Point s)
   -> (clickedAtom : Fin k)
   -> (mol : CDIGraph k)
@@ -743,11 +758,13 @@ rotTemplOnAtom {m = S _} p n g t =
          then tr'
          else rotateAt pMol aSteps tr'
 
--- Rotate the template around the overlapping atoms (no merging!).
+-- If one atom of the template and another atom of the origin molecule overlap,
+-- rotate the template around the overlapping point in accordance of the cursor
+-- movement.
 -- Here, rotating the template is only allowed in defined step angles.
 rotTemplAroundOverlap :
-     CoreDims
-  => {s,k,m : _}
+     {auto _ : CoreDims}
+  -> {s,k,m : _}
   -> (cursor : Point s)
   -> (aMol : Fin k)
   -> (aTempl : Fin m)
@@ -759,8 +776,8 @@ rotTemplAroundOverlap p nm nt g t =
       pTemA   := point $ lab t nt
       offset  := pMol - pTemA
       t'      := translate offset t
-      Just a0 := angle (pMol - center t') | Nothing => G _ t
-      Just aM := angle (pMol - convert p) | Nothing => G _ t
+      Just a0 := angle (pMol - center t') | Nothing => G _ t'
+      Just aM := angle (pMol - convert p) | Nothing => G _ t'
       angle   := aM - a0
       aSteps  := fromMaybe angle (closestAngle angle stepAngles)
    in G _ $ rotateAt pMol aSteps t'
@@ -898,14 +915,24 @@ translateTemplateAtom v (CA _ a) = CA None $ translate v a
 
 export
 ||| Translating the template to the mouse position and setting the roles to new.
-translateTemplate : CoreDims => {s : _} -> Point s -> (t : CDGraph) -> CDGraph
+translateTemplate :
+     {auto _ : CoreDims}
+  -> {s : _}
+  -> Point s
+  -> (t : CDGraph)
+  -> CDGraph
 translateTemplate p t =
   let v := convert p - center t in bimap new (translateTemplateAtom v) t
 
 ||| Merges a template graph with the current mol graph based on the
 ||| current mouse position.
 export
-addTemplate : CoreDims => {s : _} -> Point s -> (t, mol : CDGraph) -> CDGraph
+addTemplate :
+     {auto _ : CoreDims}
+  -> {s : _}
+  -> Point s
+  -> (t, mol : CDGraph)
+  -> CDGraph
 addTemplate p t mol =
   let v := convert p - center t
    in mergeGraphs (convert p) mol (bimap new (translateTemplateAtom v) t)
@@ -918,8 +945,8 @@ addTemplate p t mol =
 ||| the mouse button and moving the cursor.
 export
 addTemplateRot :
-     CoreDims
-  => {s,k,n : _}
+     {auto _ : CoreDims}
+  -> {s,k,n : _}
   -> (cursor : Point s)
   -> Either Nat (Nat, Nat)
   -> (templ : CDIGraph k)
@@ -931,12 +958,12 @@ addTemplateRot {n = S j,k = S i} p (Left x) t m =
     Just f  =>
       let rotTemp := rotTemplOnAtom p f m t
           bnd     := CB New $ cast Single
-       in G _ $ mergeGraphsWithEdges m rotTemp [(f,0,bnd)]
+       in mergeGraphs' m rotTemp [(f,0,bnd)]
 addTemplateRot {n = S j,k = S i} p (Right (nm,nt)) t m =
   case (natToFin nm (S j), natToFin nt (S i)) of
     (Just fm, Just ft) =>
       let (G _ rotTemp) := rotTemplAroundOverlap p fm ft m t
-       in mergeGraphs' m rotTemp
+       in mergeGraphs' m rotTemp []
     _                  => addTemplate p (G _ t) (G _ m)
 addTemplateRot _ _ _ m = G _ m
 
@@ -980,7 +1007,11 @@ groupSelected g ns n =
 ||| Translates the selected atoms in a molecule by a vector given
 ||| as a start and end point.
 export
-moveSelected : CoreDims => (start, end : Point Mol) -> CDGraph -> CDGraph
+moveSelected :
+     {auto _ : CoreDims}
+  -> (start, end : Point Mol)
+  -> CDGraph
+  -> CDGraph
 moveSelected start end (G o g) =
   let gs := selectedNodes g True >>= toList . groupNr g
    in mergeCloseNodes $ mapNodeIf (groupSelected g gs) (translate $ end - start) g
