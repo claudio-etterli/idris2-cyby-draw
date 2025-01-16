@@ -604,6 +604,16 @@ newEdges t ps = do
   (a1,a2) <- ps
   (\(x,l) => (a1,x,l)) <$> neighboursAsPairs t a2
 
+-- TODO
+-- checks if the bond is later deleted due to the close node merging and if this
+-- is the case, create a new bond to the non-template node which replaces the
+-- template atom
+stabelBond :
+     {k,m : _}
+  -> (Fin k, Fin m)
+  -> List (Fin k, Fin m, CDBond)
+  -> (Fin k, Fin k, CDBond)
+
 incNode : {m : _} -> (k : Nat) -> Fin m -> Maybe (Fin $ k + m)
 incNode k x = tryNatToFin (k + finToNat x)
 
