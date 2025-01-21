@@ -604,33 +604,27 @@ newEdges t ps = do
   (a1,a2) <- ps
   (\(x,l) => (a1,x,l)) <$> neighboursAsPairs t a2
 
+inBond : {m : _} -> (n1,n2 : Fin m) -> Edge m CDBond -> Bool
+inBond n1 n2 bnd =
+  (n1 == bnd.node1 && n2 == bnd.node2) || (n2 == bnd.node1 && n1 == bnd.node2)
+
+-- if there is a template bond which would be deleted due to the node merging,
+-- create the bond between the corresponding origin molecule nodes
+-- TODO: the new type of the bond is Single, this should create the best(?)
+-- fit to the origin molecule
 createStableBond :
      {k,m : _}
   -> List (Fin k, Fin m)
+  -> List (Edge k CDBond)
   -> Edge m CDBond
   -> Maybe $ Edge k CDBond
-createStableBond nsToMerge bnd =
-  let filter := foldMap {m=List (Fin k, Fin m)}
-                  (\(nm,nt) => if nt == bnd.node1 || nt == bnd.node2
-                                 then [(nm, nt)]
-                                 else [])
-                  nsToMerge
-   in case filter of
-        [(nm',_),(nm'',_)] => mkEdge nm' nm'' bnd.label
-        _                  => Nothing
-
--- filters out bonds of the template, where both nodes are merged and therefore
--- the bond would be deleted
--- transfers this bonds to the nodes of the origin molecule, therefore the bonds
--- are not deleted and are 'stable'
-stableBonds :
-     {k,m : _}
-  -> CDIGraph m
-  -> (nsToMerge : List (Fin k, Fin m))
-  -> List $ Edge k CDBond
-stableBonds t nsToMerge =
-  let tempEdges := edges t
-   in mapMaybe (createStableBond nsToMerge) tempEdges
+createStableBond nsToMerge bondsG bnd =
+  case filter (\(_,nt) => nt == bnd.node1 || nt == bnd.node2) nsToMerge of
+    [(nm1,_),(nm2,_)] =>
+      if any (inBond nm1 nm2) bondsG
+         then Nothing
+         else mkEdge nm1 nm2 $ CB None ({type := Single} bnd.label.molBond)
+    _                  => Nothing
 
 incNode : {m : _} -> (k : Nat) -> Fin m -> Maybe (Fin $ k + m)
 incNode k x = tryNatToFin (k + finToNat x)
@@ -670,14 +664,15 @@ mergeGraphs' :
   -> List (Fin k, Fin m, CDBond)
   -> CDGraph
 mergeGraphs' g t bs =
-  let lMergeN     := nodesToMerge g t
-      offset      := offset g t lMergeN
-      lnewBonds   := newEdges t lMergeN ++ bs
+  let lMergeN   := nodesToMerge g t
+      offset    := offset g t lMergeN
+      lnewBonds := newEdges t lMergeN ++ bs
       -- creates and inserts bonds between atoms of the origin molecule, which
       -- origins from (later) merged template atoms, where the bond would be
       -- lost otherwise
-      mol'        := insEdges (stableBonds t lMergeN) g
-      mol''       := mergeGraphsWithEdges mol' (translate offset t) lnewBonds
+      mol'      :=
+        insEdges (mapMaybe (createStableBond lMergeN (edges g)) (edges t)) g
+      mol''     := mergeGraphsWithEdges mol' (translate offset t) lnewBonds
    in delNodes (mapMaybe (incNode k . snd) lMergeN) mol''
 
 -- This connects a template to a graph by connecting the template's
