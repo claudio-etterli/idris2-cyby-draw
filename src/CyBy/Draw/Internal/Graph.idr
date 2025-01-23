@@ -610,8 +610,6 @@ inBond n1 n2 bnd =
 
 -- if there is a template bond which would be deleted due to the node merging,
 -- create the bond between the corresponding origin molecule nodes
--- TODO: the new type of the bond is Single, this should create the best(?)
--- fit to the origin molecule
 createStableBond :
      {k,m : _}
   -> List (Fin k, Fin m)
@@ -667,9 +665,10 @@ mergeGraphs' g t bs =
   let lMergeN   := nodesToMerge g t
       offset    := offset g t lMergeN
       lnewBonds := newEdges t lMergeN ++ bs
-      -- creates and inserts bonds between atoms of the origin molecule, which
-      -- origins from (later) merged template atoms, where the bond would be
-      -- lost otherwise
+      -- replaces bonds between merging (and therefore to be deleted) template
+      -- atoms and origin atoms
+      -- this is only done if there isn't already a bond from the origin
+      -- molecule present at the same position
       mol'      :=
         insEdges (mapMaybe (createStableBond lMergeN (edges g)) (edges t)) g
       mol''     := mergeGraphsWithEdges mol' (translate offset t) lnewBonds

@@ -20,6 +20,8 @@ import Text.SVG
 %language ElabReflection
 %hide Language.Reflection.TTImp.Mode
 
+||| Record pairing graph with one of its node's index
+public export
 record DepNode where
   constructor DN
   graph : CDGraph
@@ -27,7 +29,7 @@ record DepNode where
 
 %runElab derive "DepNode" [Show]
 
--- TODO: Is this correct?? The order has to be the same because `g1 == g2`
+export
 Eq DepNode where
   (==) (DN g1 n1) (DN g2 n2) = g1 == g2 && finToNat n1 == finToNat n2
 
