@@ -20,6 +20,20 @@ import Text.SVG
 %language ElabReflection
 %hide Language.Reflection.TTImp.Mode
 
+||| Record pairing graph with one of its node's index
+public export
+record DepNode where
+  constructor DN
+  graph : CDGraph
+  node  : Fin graph.order
+
+%runElab derive "DepNode" [Show]
+
+export
+Eq DepNode where
+  (==) (DN g1 n1) (DN g2 n2) = g1 == g2 && finToNat n1 == finToNat n2
+
+
 --------------------------------------------------------------------------------
 --          Drawing Mode
 --------------------------------------------------------------------------------
@@ -32,9 +46,9 @@ data Mode : Type where
   SetAtom     : Isotope -> Mode
   SetAbbr     : Abbreviation -> Mode
   SetTempl    : CDGraph -> Mode
-  RotTempl    : (start : Point Mol) -> CDGraph -> Mode
-  RotTemplAtm : (clickedAtom : Nat) -> CDGraph -> Mode
-  RotTemplOvp : (overlaps : (Nat,Nat)) -> CDGraph -> Mode
+  RotTempl    : (start : Point Mol) -> (t : CDGraph) -> Mode
+  RotTemplAtm : DepNode -> CDGraph -> Mode
+  RotTemplOvp : (g,t : DepNode) -> Mode
   Selecting   : (start : Point Id) -> Mode
   Erasing     : (start : Point Id) -> Mode
   Dragging    : (start : Point Mol) -> Mode
@@ -232,8 +246,8 @@ nextMol s =
       Rotating p       => rotateSelected (s.modifier == Shift) p s.posMol s.mol
       SetTempl t       => addTemplate s.posMol t s.mol
       RotTempl p t     => addTemplate p (rotateTempl False p s.posMol t) s.mol
-      RotTemplOvp ps t => addTemplateRot s.posMol (Right ps) t.graph s.imol
-      RotTemplAtm p t  => addTemplateRot s.posMol (Left p) t.graph s.imol
+      RotTemplOvp g t => addTemplateRot s.posMol (Right (g.node,t.node)) t.graph.graph g.graph.graph
+      RotTemplAtm g t => addTemplateRot s.posMol (Left g.node) t.graph g.graph.graph
       Drawing Nothing  => addBond (s.modifier == Shift) s.posMol s.bond s.imol
       Drawing (Just $ A l _ g) => setAbbreviation (s.modifier == Shift) l s.posId g s.mol
 
@@ -416,13 +430,13 @@ parameters {auto ds : DrawSettings}
             SetTempl  t =>
                 case hoveredItem s.imol of
                   -- adding template at hovered atom
-                  N (f,_)  => {mode := RotTemplAtm (finToNat f) t} s
+                  N (f,_)  => {mode := RotTemplAtm (DN s.mol f) t} s
                   _        =>
                    let t' := graph $ translateTemplate s.posMol t
                     in case nodesToMerge s.imol t' of
                          -- exactly one overlap -> rotating around it possible
                          [(fm, ft)] =>
-                           {mode := RotTemplOvp (finToNat fm, finToNat ft) t} s
+                           {mode := RotTemplOvp (DN (G _ s.imol) fm) (DN (G _ t') ft)} s
                          _          =>
                            setMol (cleanup $ nextMol s) $ {mode := SetTempl t} s
             _ => s
@@ -440,8 +454,8 @@ parameters {auto ds : DrawSettings}
       Erasing   _ => delete $ {mode := Erase, mol := cleanup (nextMol s)} s
       Dragging  _ => setMol (cleanup $ nextMol s) $ {mode := Select} s
       Rotating  _ => setMol (cleanup $ nextMol s) $ {mode := Select} s
-      RotTemplAtm _ t  => setMol (cleanup $ nextMol s) $ {mode := SetTempl t} s
-      RotTemplOvp _ t  => setMol (cleanup $ nextMol s) $ {mode := SetTempl t} s
+      RotTemplAtm _ t => setMol (cleanup $ nextMol s) $ {mode := SetTempl t} s
+      RotTemplOvp _ t => setMol (cleanup $ nextMol s) $ {mode := SetTempl t.graph} s
       Drawing (Just a) => setMol (cleanup $ nextMol s) $ {mode := SetAbbr a} s
       Drawing Nothing  => setMol (cleanup $ nextMol s) $ {mode := Draw} s
       PTable (Just el) => {mode := SetAtom (cast el)} s

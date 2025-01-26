@@ -610,8 +610,6 @@ inBond n1 n2 bnd =
 
 -- if there is a template bond which would be deleted due to the node merging,
 -- create the bond between the corresponding origin molecule nodes
--- TODO: the new type of the bond is Single, this should create the best(?)
--- fit to the origin molecule
 createStableBond :
      {k,m : _}
   -> List (Fin k, Fin m)
@@ -667,9 +665,10 @@ mergeGraphs' g t bs =
   let lMergeN   := nodesToMerge g t
       offset    := offset g t lMergeN
       lnewBonds := newEdges t lMergeN ++ bs
-      -- creates and inserts bonds between atoms of the origin molecule, which
-      -- origins from (later) merged template atoms, where the bond would be
-      -- lost otherwise
+      -- replaces bonds between merging (and therefore to be deleted) template
+      -- atoms and origin atoms
+      -- this is only done if there isn't already a bond from the origin
+      -- molecule present at the same position
       mol'      :=
         insEdges (mapMaybe (createStableBond lMergeN (edges g)) (edges t)) g
       mol''     := mergeGraphsWithEdges mol' (translate offset t) lnewBonds
@@ -956,23 +955,17 @@ addTemplateRot :
      {auto _ : CoreDims}
   -> {s,k,n : _}
   -> (cursor : Point s)
-  -> Either Nat (Nat, Nat)
+  -> Either (Fin n) (Fin n, Fin k)
   -> (templ : CDIGraph k)
   -> (mol : CDIGraph n)
   -> CDGraph
-addTemplateRot {n = S j,k = S i} p (Left x) t m =
-  case natToFin x (S j) of
-    Nothing => addTemplate p (G _ t) (G _ m)
-    Just f  =>
-      let rotTemp := rotTemplOnAtom p f m t
-          bnd     := CB New $ cast Single
-       in mergeGraphs' m rotTemp [(f,0,bnd)]
-addTemplateRot {n = S j,k = S i} p (Right (nm,nt)) t m =
-  case (natToFin nm (S j), natToFin nt (S i)) of
-    (Just fm, Just ft) =>
-      let (G _ rotTemp) := rotTemplAroundOverlap p fm ft m t
-       in mergeGraphs' m rotTemp []
-    _                  => addTemplate p (G _ t) (G _ m)
+addTemplateRot {n = S j,k = S i} p (Left f) t m =
+  let rotTemp := rotTemplOnAtom p f m t
+      bnd     := CB New $ cast Single
+   in mergeGraphs' m rotTemp [(f,0,bnd)]
+addTemplateRot {n = S j,k = S i} p (Right (fm,ft)) t m =
+  let (G _ rotTemp) := rotTemplAroundOverlap p fm ft m t
+   in mergeGraphs' m rotTemp []
 addTemplateRot _ _ _ m = G _ m
 
 ||| Remove the abbreviation labels from orphaned abbreviation atoms.
