@@ -556,6 +556,7 @@ upd (Msg _)       s = s
 upd EndResize     s = s
 upd (EndResizeHW h w) s = endResize h w s
 upd StartPSE      s = {mode := PTable Nothing} s
+upd SVG           s = s
 
 ||| Convert an `AffineTransformation` to a transformation to be
 ||| used in an SVG element.

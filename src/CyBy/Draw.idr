@@ -32,8 +32,13 @@ prim__writeToClipboard : String -> PrimIO ()
 %foreign "browser:lambda:(f,w) => navigator.clipboard.readText().then(s => f(s)(w))"
 prim__readFromClipboard : (String -> PrimIO ()) -> PrimIO ()
 
+%inline
+toClipboard : String -> JSIO ()
+toClipboard s = primIO (prim__writeToClipboard s)
+
+%inline
 molToClipboard : CDGraph -> JSIO ()
-molToClipboard g = primIO (prim__writeToClipboard . writeMolfile $ toMolfile g)
+molToClipboard = toClipboard . writeMolfile . toMolfile
 
 fromClipboard : Cmd DrawEvent
 fromClipboard =
@@ -229,6 +234,7 @@ topBar pre s =
     , bondIcon "snglBUpDown" (fromStereo UpOrDown) "single bond up or down" s
     , bondIcon "dblB" (cast Dbl) "double bond" s
     , bondIcon "trplB" (cast Triple) "triple bond" s
+    , icon "svg" SVG "svg"
     ]
 
 template : (cls : String) -> CDGraph -> String -> DrawState -> Node DrawEvent
@@ -431,6 +437,7 @@ parameters {auto ds : DrawSettings}
   displayEv (ZoomIn _)       s = adjustBars s
   displayEv (ZoomOut _)      s = adjustBars s
   displayEv Clear            s = adjustBars s
+  displayEv SVG              s = cmd_ (toClipboard s.curSVG)
   displayEv _                s = neutral
 
   export
