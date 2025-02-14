@@ -9,9 +9,9 @@ body {
   color: black;
   display: flex;
   flex-direction: column;
-  font-family: "sans-serif";
+  font-family: sans-serif;
   height: 100%;
-  margin: 0px;
+  margin: 0;
 }
 
 .cyby-draw-main-content {
@@ -34,7 +34,7 @@ body {
 
 .cyby-draw-icon:hover {
   border-radius: 3px;
-  background-color: rgb(158,158,158);
+  background-color: rgb(158, 158, 158);
 }
 
 .cyby-draw-icon:disabled {
@@ -50,26 +50,24 @@ body {
   appearance: none;
   width: 20px;
   height: 20px;
-  border: none;
   background-size: 100%;
-  margin: 0px;
+  margin: 0;
   border-radius: 3px;
   border: 1px solid darkgrey;
 }
 
 .cyby-draw-radio-icon:checked {
   border: 1px solid black;
-  background-color: rgb(189,189,189);
+  background-color: rgb(189, 189, 189);
 }
 
 .cyby-draw-radio-icon:hover {
-  background-color: rgb(158,158,158);
+  background-color: rgb(158, 158, 158);
 }
-
 
 /* Sketcher with Canvas and Buttons */
 .cyby-draw-sketcher-div {
-  background-color: rgb(238,238,238);
+  background-color: rgb(238, 238, 238);
   grid-column: 1;
   grid-row: 1;
   display: grid;
@@ -78,35 +76,36 @@ body {
   column-gap: 3px;
   grid-template-columns: min-content 1fr min-content;
   grid-template-rows: max-content 1fr max-content;
-  grid-template-areas: "top top dot"
-                        "left draw right"
-                        "left bot right";
+  grid-template-areas:
+      "top top dot"
+      "left draw right"
+      "left bot right";
 }
 
 .cyby-draw-toolbar-top {
   display: grid;
-  grid-template-columns: repeat(16,min-content);
+  grid-template-columns: repeat(16, min-content);
   column-gap: 3px;
   grid-area: top;
 }
 
 .cyby-draw-toolbar-left {
   display: grid;
-  grid-template-rows: repeat(9,min-content);
+  grid-template-rows: repeat(9, min-content);
   row-gap: 3px;
   grid-area: left;
 }
 
 .cyby-draw-toolbar-right {
   display: grid;
-  grid-template-rows: repeat(3,max-content);
+  grid-template-rows: repeat(3, max-content);
   row-gap: 6px;
   grid-area: right;
 }
 
 .cyby-draw-toolbar-bottom-outer {
   display: grid;
-  grid-template-columns: repeat(2,min-content);
+  grid-template-columns: repeat(2, min-content);
   column-gap: 3px;
   align-items: center;
   grid-area: bot;
@@ -119,135 +118,135 @@ body {
 }
 
 .cyby-draw-radio-icon.sel {
-  background-image: url('icons/icon_select.svg');
+  background-image: url("icons/icon_select.svg");
 }
 
 .cyby-draw-radio-icon.erase {
-  background-image: url('icons/icon_eraser.svg');
+  background-image: url("icons/icon_eraser.svg");
 }
 
 .cyby-draw-icon.clear {
-  background-image: url('icons/icon_trash.svg');
+  background-image: url("icons/icon_trash.svg");
 }
 
 .cyby-draw-icon.svg {
-  background-image: url('icons/icon_svg.svg');
+  background-image: url("icons/icon_svg.svg");
 }
 
 .cyby-draw-icon.undo {
-  background-image: url('icons/icon_undo.svg');
+  background-image: url("icons/icon_undo.svg");
 }
 
 .cyby-draw-icon.redo {
-  background-image: url('icons/icon_redo.svg');
+  background-image: url("icons/icon_redo.svg");
 }
 
 .cyby-draw-icon.zoomIn {
-  background-image: url('icons/icon_zoomIn.svg');
+  background-image: url("icons/icon_zoomIn.svg");
 }
 
 .cyby-draw-icon.center {
-  background-image: url('icons/icon_centering.svg');
+  background-image: url("icons/icon_centering.svg");
 }
 
 .cyby-draw-icon.zoomOut {
-  background-image: url('icons/icon_zoomOut.svg');
+  background-image: url("icons/icon_zoomOut.svg");
 }
 
 .cyby-draw-radio-icon.benzene {
-  background-image: url('icons/icon_benzene.svg');
+  background-image: url("icons/icon_benzene.svg");
 }
 
 .cyby-draw-radio-icon.cyclopropane {
-  background-image: url('icons/icon_cyclopropane.svg');
+  background-image: url("icons/icon_cyclopropane.svg");
 }
 
 .cyby-draw-radio-icon.cyclobutane {
-  background-image: url('icons/icon_cyclobutane.svg');
+  background-image: url("icons/icon_cyclobutane.svg");
 }
 
 .cyby-draw-radio-icon.cyclopentane {
-  background-image: url('icons/icon_cyclopentane.svg');
+  background-image: url("icons/icon_cyclopentane.svg");
 }
 
 .cyby-draw-radio-icon.cyclohexane {
-  background-image: url('icons/icon_cyclohexane.svg');
+  background-image: url("icons/icon_cyclohexane.svg");
 }
 
 .cyby-draw-radio-icon.cycloheptane {
-  background-image: url('icons/icon_cycloheptane.svg');
+  background-image: url("icons/icon_cycloheptane.svg");
 }
 
 .cyby-draw-radio-icon.cyclooctane {
-  background-image: url('icons/icon_cyclooctane.svg');
+  background-image: url("icons/icon_cyclooctane.svg");
 }
 
 .cyby-draw-radio-icon.snglB {
-  background-image: url('icons/icon_snglB.svg');
+  background-image: url("icons/icon_snglB.svg");
 }
 
 .cyby-draw-radio-icon.snglBUp {
-  background-image: url('icons/icon_snglBUp.svg');
+  background-image: url("icons/icon_snglBUp.svg");
 }
 
 .cyby-draw-radio-icon.snglBDown {
-  background-image: url('icons/icon_snglBDown.svg');
+  background-image: url("icons/icon_snglBDown.svg");
 }
 
 .cyby-draw-radio-icon.snglBUpDown {
-  background-image: url('icons/icon_snglBUpDown.svg');
+  background-image: url("icons/icon_snglBUpDown.svg");
 }
 
 .cyby-draw-radio-icon.dblB {
-  background-image: url('icons/icon_dblB.svg');
+  background-image: url("icons/icon_dblB.svg");
 }
 
 .cyby-draw-radio-icon.trplB {
-  background-image: url('icons/icon_trplB.svg');
+  background-image: url("icons/icon_trplB.svg");
 }
 
 .cyby-draw-radio-icon.setC {
-  background-image: url('icons/icon_c.svg');
+  background-image: url("icons/icon_c.svg");
 }
 
 .cyby-draw-radio-icon.setN {
-  background-image: url('icons/icon_n.svg');
+  background-image: url("icons/icon_n.svg");
 }
 
 .cyby-draw-radio-icon.setO {
-  background-image: url('icons/icon_o.svg');
+  background-image: url("icons/icon_o.svg");
 }
 
 .cyby-draw-radio-icon.setS {
-  background-image: url('icons/icon_s.svg');
+  background-image: url("icons/icon_s.svg");
 }
 
 .cyby-draw-radio-icon.setF {
-  background-image: url('icons/icon_f.svg');
+  background-image: url("icons/icon_f.svg");
 }
 
 .cyby-draw-radio-icon.setP {
-  background-image: url('icons/icon_p.svg');
+  background-image: url("icons/icon_p.svg");
 }
 
 .cyby-draw-radio-icon.setB {
-  background-image: url('icons/icon_b.svg');
+  background-image: url("icons/icon_b.svg");
 }
 
 .cyby-draw-radio-icon.setCl {
-  background-image: url('icons/icon_cl.svg');
+  background-image: url("icons/icon_cl.svg");
 }
 
 .cyby-draw-radio-icon.setBr {
-  background-image: url('icons/icon_br.svg');
+  background-image: url("icons/icon_br.svg");
 }
 
 .cyby-draw-radio-icon.pse {
-  background-image: url('icons/icon_pse.svg');
+  background-image: url("icons/icon_pse.svg");
 }
 
 .cyby-draw-icon.toggleMol {
-  background-image: url('icons/icon_folder.svg');
+  background-image: url("icons/icon_folder.svg");
 }
 
 .cyby-draw-molecule-canvas {
@@ -265,7 +264,7 @@ body {
 }
 
 .cyby-draw-molecule-canvas.rotating {
-  cursor: url('icons/icon_rotation.svg'), auto;
+  cursor: url("icons/icon_rotation.svg"), auto;
 }
 
 .cyby-draw-molecule-canvas.dragging {
