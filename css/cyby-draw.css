@@ -74,12 +74,10 @@ body {
   padding: 3px;
   row-gap: 3px;
   column-gap: 3px;
-  grid-template-columns: min-content 1fr min-content;
-  grid-template-rows: max-content 1fr max-content;
-  grid-template-areas:
-      "top top dot"
-      "left draw right"
-      "left bot right";
+  grid-template:
+    "top top dot" max-content
+    "left draw right" 1fr
+    "left bot right" max-content / min-content 1fr min-content;
 }
 
 .cyby-draw-toolbar-top {
@@ -272,7 +270,7 @@ body {
   display: grid;
   grid-template-columns: 150px max-content;
   grid-auto-rows: max-content;
-  row-gap: 10px
+  row-gap: 10px;
 }
 
 .cyby-draw-detail {
