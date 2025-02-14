@@ -131,12 +131,12 @@ abbrID pre = Id "\{pre}_abbreviations"
 elems : MolAtomAT -> Node DrawEvent
 elems a =
   selectFromListBy values (a.elem.elem ==) symbol ChgElem
-    [ class "cyby_draw_select", title "Set Element" ]
+    [ class "cyby-draw-select", title "Set Element" ]
 
 charges : MolAtomAT -> Node DrawEvent
 charges a =
   selectFromListBy chs (a.charge ==) (show . value) ChgCharge
-    [ class "cyby_draw_select", title "Set Charge" ]
+    [ class "cyby-draw-select", title "Set Charge" ]
   where
     chs : List Charge
     chs = mapMaybe refineCharge [(-8) .. 8]
@@ -144,7 +144,7 @@ charges a =
 massNrs : MolAtomAT -> Node DrawEvent
 massNrs a =
   selectFromListBy (masses a.elem.elem) (a.elem.mass ==) dispMass ChgMass
-    [ class "cyby_draw_select", title "Set Charge" ]
+    [ class "cyby-draw-select", title "Set Charge" ]
   where
     dispMass : Maybe MassNr -> String
     dispMass Nothing  = "Mix"
@@ -155,7 +155,7 @@ hidden = class "hidden"
 
 icon : (cls : String) -> DrawEvent -> (title : String) -> Node DrawEvent
 icon cls ev ttl =
-  button [classes ["cyby_draw_icon", cls], onClick ev, title ttl] []
+  button [classes ["cyby-draw-icon", cls], onClick ev, title ttl] []
 
 radioIcon :
      (cls : String)
@@ -167,7 +167,7 @@ radioIcon cls ev ttl b =
   input
     [ name "tool"
     , type Radio
-    , classes ["cyby_draw_radio_icon", cls]
+    , classes ["cyby-draw-radio-icon", cls]
     , onClick ev, title ttl
     , checked b
     ]
@@ -176,8 +176,8 @@ radioIcon cls ev ttl b =
 abbrCls : DrawState -> List String
 abbrCls s =
   case s.mode of
-    SetAbbr _ => ["cyby_draw_select","active"]
-    _         => ["cyby_draw_select"]
+    SetAbbr _ => ["cyby-draw-select","active"]
+    _         => ["cyby-draw-select"]
     
 
 abbrs : (ds : DrawSettings) => (pre : String) -> DrawState -> Node DrawEvent
@@ -219,7 +219,7 @@ maxZoom (AT tf _) = tf.scale >= s.maxZoom
 topBar : DrawSettings => (pre : String) -> DrawState -> Node DrawEvent
 topBar pre s =
   div
-    [ Id $ topBarID pre, class "cyby_draw_toolbar_top" ]
+    [ Id $ topBarID pre, class "cyby-draw-toolbar-top" ]
     [ radioIcon "sel" SelectMode "select" (s.mode == Select)
     , radioIcon "erase" EraseMode "erase" (s.mode == Erase)
     , disable (order s.mol == 0) $ icon "clear" Clear "clear"
@@ -249,7 +249,7 @@ pse _           = False
 leftBar : (pre : String) -> DrawState -> Node DrawEvent
 leftBar pre s =
   div
-    [ Id $ leftBarID pre, class "cyby_draw_toolbar_left" ]
+    [ Id $ leftBarID pre, class "cyby-draw-toolbar-left" ]
     [ radioIcon "setC" (SetElem C) "Carbon" (setting C s)
     , radioIcon "setO" (SetElem O) "Oxygen" (setting O s)
     , radioIcon "setN" (SetElem N) "Nitrogen" (setting N s)
@@ -264,8 +264,8 @@ leftBar pre s =
 detail : String -> Node e -> Node e
 detail title n =
   div
-    [class "cyby_draw_detail"]
-    [label [ class "cyby_draw_label" ] [ Text title ], n]
+    [class "cyby-draw-detail"]
+    [label [ class "cyby-draw-label" ] [ Text title ], n]
 
 
 rightBar : (pre : String) -> DrawState -> Node DrawEvent
@@ -275,18 +275,18 @@ rightBar pre s =
       let atm := atom $ lab s.imol n
           tpe := atm.type.name
        in div
-            [ Id $ rightBarID pre, class "cyby_draw_toolbar_right" ]
+            [ Id $ rightBarID pre, class "cyby-draw-toolbar-right" ]
             [ detail "Element" $ elems atm
             , detail "Isotope" $ massNrs atm
             , detail "Charge"  $ charges atm
-            , detail "Type"    $ div [ class "cyby_draw_atomtype"] [Text tpe]
+            , detail "Type"    $ div [ class "cyby-draw-atomtype"] [Text tpe]
             ]
-    _   => div [ Id $ rightBarID pre, class "cyby_draw_toolbar_right" ] []
+    _   => div [ Id $ rightBarID pre, class "cyby-draw-toolbar-right" ] []
 
 bottomBar : (pre : String) -> DrawState -> Node DrawEvent
 bottomBar pre s =
   div
-    [ Id $ bottomBarID pre, class "cyby_draw_toolbar_bottom_inner" ]
+    [ Id $ bottomBarID pre, class "cyby-draw-toolbar-bottom-inner" ]
     [ template "benzene" phenyl "Benzene" s
     , template "cyclohexane" (ring 6) "Cyclohexane" s
     , template "cyclopentane" (ring 5) "Cyclopentane" s
@@ -303,18 +303,18 @@ export
 sketcher : DrawSettings => (pre : String) -> DrawState -> Node DrawEvent
 sketcher pre s =
   div
-    [ class "cyby_draw_main_content"
+    [ class "cyby-draw-main-content"
     , Id $ sketcherDiv pre
     ]
     [ div
-      [ class "cyby_draw_sketcher_div"
+      [ class "cyby-draw-sketcher-div"
       , Id $ sketcherDivInner pre
       ]
       [ topBar pre s
       , leftBar pre s
       , rightBar pre s
       , div
-          [ class "cyby_draw_molecule_canvas"
+          [ class "cyby-draw-molecule-canvas"
           , Id $ moleculeCanvas pre
           , Event $ MouseMove move
           , Event $ MouseDown down
@@ -331,10 +331,10 @@ sketcher pre s =
           ]
           [Raw s.curSVG]
       , div
-          [ class "cyby_draw_toolbar_bottom_outer" ]
+          [ class "cyby-draw-toolbar-bottom-outer" ]
           [ bottomBar pre s, abbrs pre s ]
       ]
-      , div [ Id $ infoList pre, class "cyby_draw_info_list" ] []
+      , div [ Id $ infoList pre, class "cyby-draw-info-list" ] []
     ]
 
 --------------------------------------------------------------------------------
@@ -342,7 +342,7 @@ sketcher pre s =
 --------------------------------------------------------------------------------
 
 molCanvasCls : String
-molCanvasCls = "cyby_draw_molecule_canvas"
+molCanvasCls = "cyby-draw-molecule-canvas"
 
 parameters {auto ds : DrawSettings}
            (pre : String)
