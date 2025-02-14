@@ -91,7 +91,7 @@ body {
 
 .cyby_draw_toolbar_top {
   display : grid;
-  grid-template-columns : repeat(15,min-content);
+  grid-template-columns : repeat(16,min-content);
   column-gap : 3px;
   grid-area : top;
 }
@@ -142,6 +142,10 @@ body {
 
 .cyby_draw_icon.clear {
   background-image : url('icons/icon_trash.svg');
+}
+
+.cyby_draw_icon.svg {
+  background-image : url('icons/icon_svg.svg');
 }
 
 .cyby_draw_icon.undo {
