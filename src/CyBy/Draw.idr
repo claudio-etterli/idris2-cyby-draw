@@ -226,14 +226,14 @@ topBar pre s =
     , disable (s.undos == []) $ icon "undo" Undo "undo"
     , disable (s.redos == []) $ icon "redo" Redo "redo"
     , icon "center" Center "center"
-    , disable (maxZoom s.transform) $ icon "zoomIn" (ZoomIn False) "zoom in"
-    , disable (minZoom s.transform) $ icon "zoomOut" (ZoomOut False) "zoom out"
-    , bondIcon "snglB" (cast Single) "single bond" s
-    , bondIcon "snglBUp" (fromStereo Up) "single bond up" s
-    , bondIcon "snglBDown" (fromStereo Down) "single bond down" s
-    , bondIcon "snglBUpDown" (fromStereo UpOrDown) "single bond up or down" s
-    , bondIcon "dblB" (cast Dbl) "double bond" s
-    , bondIcon "trplB" (cast Triple) "triple bond" s
+    , disable (maxZoom s.transform) $ icon "zoom-in" (ZoomIn False) "zoom in"
+    , disable (minZoom s.transform) $ icon "zoom-out" (ZoomOut False) "zoom out"
+    , bondIcon "single-bond" (cast Single) "single bond" s
+    , bondIcon "single-up" (fromStereo Up) "single bond up" s
+    , bondIcon "single-down" (fromStereo Down) "single bond down" s
+    , bondIcon "single-up-down" (fromStereo UpOrDown) "single bond up or down" s
+    , bondIcon "double-bond" (cast Dbl) "double bond" s
+    , bondIcon "triple-bond" (cast Triple) "triple bond" s
     , icon "svg" SVG "svg"
     ]
 
@@ -250,14 +250,14 @@ leftBar : (pre : String) -> DrawState -> Node DrawEvent
 leftBar pre s =
   div
     [ Id $ leftBarID pre, class "cyby-draw-toolbar-left" ]
-    [ radioIcon "setC" (SetElem C) "Carbon" (setting C s)
-    , radioIcon "setO" (SetElem O) "Oxygen" (setting O s)
-    , radioIcon "setN" (SetElem N) "Nitrogen" (setting N s)
-    , radioIcon "setF" (SetElem F) "Fluorine" (setting F s)
-    , radioIcon "setP" (SetElem P) "Phosphorus" (setting P s)
-    , radioIcon "setS" (SetElem S) "Sulfur" (setting S s)
-    , radioIcon "setCl" (SetElem Cl) "Chlorine" (setting Cl s)
-    , radioIcon "setBr" (SetElem Br) "Bromine" (setting Br s)
+    [ radioIcon "set-c" (SetElem C) "Carbon" (setting C s)
+    , radioIcon "set-o" (SetElem O) "Oxygen" (setting O s)
+    , radioIcon "set-n" (SetElem N) "Nitrogen" (setting N s)
+    , radioIcon "set-f" (SetElem F) "Fluorine" (setting F s)
+    , radioIcon "set-p" (SetElem P) "Phosphorus" (setting P s)
+    , radioIcon "set-s" (SetElem S) "Sulfur" (setting S s)
+    , radioIcon "set-cl" (SetElem Cl) "Chlorine" (setting Cl s)
+    , radioIcon "set-br" (SetElem Br) "Bromine" (setting Br s)
     , radioIcon "pse" StartPSE "PSE" (pse s.mode)
     ]
 
