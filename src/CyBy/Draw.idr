@@ -377,7 +377,8 @@ parameters {auto ds : DrawSettings}
   displayST : DrawState -> Cmd DrawEvent
   displayST s =
     cmdIf (s.curSVG /= s.prevSVG) $
-      child (moleculeCanvas pre) (Raw s.curSVG)
+      child (moleculeCanvas pre) (Raw s.curSVG) <+>
+      cmdIf s.hasFocus focusCurrentApp
   
   adjustBars : DrawState -> Cmd DrawEvent
   adjustBars s =
