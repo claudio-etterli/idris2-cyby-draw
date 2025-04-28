@@ -363,8 +363,11 @@ bestHPos : List Geom.Angle.Angle -> HPos
 bestHPos xs =
   if      all (\x => x >= halfPi && x <= threeHalfPi) xs then E
   else if all (\x => x <= halfPi || x >= threeHalfPi) xs then W
-  else if all (\x => x <= pi) xs then N
-  else if all (\x => x >= pi) xs then S
+  else if all (\x => x < angle (5 * pi / 4) || x > angle (7 * pi / 4)) xs
+                     -- in case several bonds point slightly north -> position H
+                     -- on the south side (or east)
+                     && count (> pi) xs < 2 then N
+  else if all (\x => x > angle (3 * pi / 4) || x < angle (pi / 4)) xs then S
   else E -- catch-all pattern for very crowded atoms
 
 ||| Determines the position of the "H" label (if any)
