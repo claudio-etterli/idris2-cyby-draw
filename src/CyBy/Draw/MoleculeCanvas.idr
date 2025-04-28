@@ -8,6 +8,7 @@ import CyBy.Draw.Internal.Atom
 import CyBy.Draw.Internal.CoreDims
 import CyBy.Draw.Internal.Graph
 import CyBy.Draw.Internal.Label
+import CyBy.Draw.Internal.Ring
 import CyBy.Draw.Internal.Role
 import CyBy.Draw.Internal.Settings
 import CyBy.Draw.PeriodicTableCanvas
@@ -487,7 +488,7 @@ stopTemplRot s m              = m
 -- Adds a bond to the molecule if hovering over a valid atom, 
 -- ensuring it's not an abbreviation. 
 addBondShortcut :
-    {auto cd : CoreDims}
+     {auto cd : CoreDims}
   -> Bool
   -> BondOrder
   -> BondStereo
@@ -500,7 +501,41 @@ addBondShortcut bol bo bs s =
       False =>
        let bnd   := MkBond bol bo bs
            G _ g := ifHover Origin s.mol
-        in setMol (addBond {t = Id} False Nothing bnd g) s
+        in setMol (hoverIfNew (addBond {t = Id} False Nothing bnd g)) s
+    _ => s  -- If not hovering over a valid atom, do nothing
+
+-- Adds a group to the molecule if hovering over a valid atom or bond, 
+-- ensuring it's not an abbreviation. 
+addGroupShortcut :
+        {auto cd : CoreDims}
+     -> CDGraph -- For example 'phenyl', '(readMolfile ac)' or '(ring 5)'
+     -> DrawState
+     -> DrawState
+addGroupShortcut g s =
+  case hoveredItem s.imol of
+    N x => case inAbbreviation s.imol (fst x) of 
+      True => s 
+      False =>  
+           setMol (mergeGraphs s.posId s.mol g) s
+    E e => setMol (mergeGraphs s.posId s.mol g) s
+    _ => s 
+
+-- Adds an abbreviation to the molecule if hovering over a valid atom, 
+-- ensuring it's not an abbreviation. 
+addAbbrShortcut :
+     {auto cd : CoreDims}
+  -> String
+  -> CDGraph
+  -> DrawState
+  -> DrawState
+addAbbrShortcut l g s =
+  case hoveredItem s.imol of
+    N x => case inAbbreviation s.imol (fst x) of
+      True => s
+      False =>
+        let s = {mol $= ifHover Origin} s  -- First set the Origin flag 
+        in 
+        setMol (setAbbreviation False l s.posId g s.mol) s
     _ => s  -- If not hovering over a valid atom, do nothing
 
 onKeyDown, onKeyUp : DrawSettings => String -> DrawState -> DrawState
@@ -517,11 +552,16 @@ onKeyDown "c"       s = ifCtrl id (setElemStr "C") s
 onKeyDown "x"       s = ifCtrl id (setElemStr "X") s
 onKeyDown "z"       s = ifCtrl undo (setElemStr "Z") s
 onKeyDown "y"       s = ifCtrl redo (setElemStr "Y") s
-onKeyDown "1" s = addBondShortcut False Single NoBondStereo s
-onKeyDown "2" s = addBondShortcut False Dbl NoBondStereo s
-onKeyDown "3" s = addBondShortcut False Triple NoBondStereo s
-onKeyDown "4" s = addBondShortcut True Single Up s 
-onKeyDown "5" s = addBondShortcut True Single Down s
+onKeyDown "0"       s = addAbbrShortcut "Ph" phenyl s
+onKeyDown "1"       s = addBondShortcut False Single NoBondStereo s
+onKeyDown "2"       s = addBondShortcut False Dbl NoBondStereo s
+onKeyDown "3"       s = addBondShortcut False Triple NoBondStereo s
+onKeyDown "4"       s = addGroupShortcut phenyl s
+onKeyDown "5"       s = addGroupShortcut (ring 5) s
+onKeyDown "6"       s = addGroupShortcut (readMolfile cy) s
+onKeyDown "7"       s = addBondShortcut True Single Up s 
+onKeyDown "8"       s = addBondShortcut True Single Down s
+onKeyDown "9"       s = addGroupShortcut (readMolfile ac) s
 onKeyDown x         s = setElemStr (toUpper x) s
 
 onKeyUp "Shift"   s = {modifier $= reset Shift} s
