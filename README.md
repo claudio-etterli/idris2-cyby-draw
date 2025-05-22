@@ -11,3 +11,4 @@ to build it and open it in a browser:
 pack build cyby-draw-app
 firefox app.html
 ```
+Link to already built [CyBy-Draw](app.html)
